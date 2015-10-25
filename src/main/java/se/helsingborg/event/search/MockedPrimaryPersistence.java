@@ -21,7 +21,7 @@ public class MockedPrimaryPersistence extends PrimaryPersistence {
 
   public static void main(String[] args) throws Exception {
     MockedPrimaryPersistence persistence = new MockedPrimaryPersistence();
-    persistence.connect();;
+    persistence.connect();
 
     persistence.disconnect();
   }

@@ -6,58 +6,22 @@ package se.helsingborg.event.domin;
  */
 public class Offer {
 
-  private String name;
-  private String description;
-  private String URL;
-  private String telephone;
-  private String email;
-  private PostalAddress postalAddress;
+  private Organization seller;
+  private Price price;
 
-  public String getName() {
-    return name;
+  public Organization getSeller() {
+    return seller;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setSeller(Organization seller) {
+    this.seller = seller;
   }
 
-  public String getDescription() {
-    return description;
+  public Price getPrice() {
+    return price;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public String getURL() {
-    return URL;
-  }
-
-  public void setURL(String URL) {
-    this.URL = URL;
-  }
-
-  public String getTelephone() {
-    return telephone;
-  }
-
-  public void setTelephone(String telephone) {
-    this.telephone = telephone;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public PostalAddress getPostalAddress() {
-    return postalAddress;
-  }
-
-  public void setPostalAddress(PostalAddress postalAddress) {
-    this.postalAddress = postalAddress;
+  public void setPrice(Price price) {
+    this.price = price;
   }
 }

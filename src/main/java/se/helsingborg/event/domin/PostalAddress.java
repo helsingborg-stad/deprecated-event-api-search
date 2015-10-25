@@ -9,8 +9,8 @@ public class PostalAddress {
   private String name;
   private String streetAddress;
   private String postalCode;
-  private String postalTown;
-  private String country;
+  private String addressLocality;
+  private String addressCountry;
 
   public String getName() {
     return name;
@@ -36,19 +36,19 @@ public class PostalAddress {
     this.postalCode = postalCode;
   }
 
-  public String getPostalTown() {
-    return postalTown;
+  public String getAddressLocality() {
+    return addressLocality;
   }
 
-  public void setPostalTown(String postalTown) {
-    this.postalTown = postalTown;
+  public void setAddressLocality(String addressLocality) {
+    this.addressLocality = addressLocality;
   }
 
-  public String getCountry() {
-    return country;
+  public String getAddressCountry() {
+    return addressCountry;
   }
 
-  public void setCountry(String country) {
-    this.country = country;
+  public void setAddressCountry(String addressCountry) {
+    this.addressCountry = addressCountry;
   }
 }

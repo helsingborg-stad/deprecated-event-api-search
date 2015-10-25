@@ -6,7 +6,7 @@ package se.helsingborg.event.domin;
  */
 public class SinglePrice extends Price {
 
-  private Float value;
+  private Float price;
 
 
   @Override
@@ -14,11 +14,11 @@ public class SinglePrice extends Price {
     return visitor.visit(this);
   }
 
-  public Float getValue() {
-    return value;
+  public Float getPrice() {
+    return price;
   }
 
-  public void setValue(Float value) {
-    this.value = value;
+  public void setPrice(Float price) {
+    this.price = price;
   }
 }

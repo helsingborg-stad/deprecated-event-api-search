@@ -29,8 +29,8 @@ public class EventJSONSerialization {
     event.setName(JSONUtil.optString(json, "name"));
     event.setDescription(JSONUtil.optString(json, "description"));
 
-    event.setCreatedEpochMilliseconds(JSONUtil.optUTC(json, "created"));
-    event.setModifiedEpochMilliseconds(JSONUtil.optUTC(json, "modified"));
+    event.setCreatedEpochMilliseconds(JSONUtil.optDateTime(json, "created"));
+    event.setModifiedEpochMilliseconds(JSONUtil.optDateTime(json, "modified"));
 
     event.setImageURL(JSONUtil.optString(json, "image"));
     event.setLocation(unmarshalLocation(JSONUtil.optJSONObject(json, "location")));
@@ -125,29 +125,57 @@ public class EventJSONSerialization {
     postalAddress.setName(JSONUtil.optString(json, "name"));
     postalAddress.setStreetAddress(JSONUtil.optString(json, "streetAddress"));
     postalAddress.setPostalCode(JSONUtil.optString(json, "postalCode"));
-    postalAddress.setPostalTown(JSONUtil.optString(json, "postalTown"));
-    postalAddress.setCountry(JSONUtil.optString(json, "country"));
+    postalAddress.setAddressLocality(JSONUtil.optString(json, "addressLocality"));
+    postalAddress.setAddressCountry(JSONUtil.optString(json, "addressCountry"));
     return postalAddress;
 
   }
 
 
   public Offer unmarshalOffer(JSONObject json) throws JSONException {
-
     if (json == null) {
       return null;
     }
 
     Offer offer = new Offer();
 
-    offer.setURL(JSONUtil.optString(json, "URL"));
-    offer.setName(JSONUtil.optString(json, "name"));
-    offer.setDescription(JSONUtil.optString(json, "description"));
-    offer.setEmail(JSONUtil.optString(json, "email"));
-    offer.setTelephone(JSONUtil.optString(json, "telephone"));
-    offer.setPostalAddress(unmarshalPostalAddress(JSONUtil.optJSONObject(json, "postalAddress")));
+    if (json.has("price")) {
+      SinglePrice price = new SinglePrice();
+      price.setCurrency(JSONUtil.optString(json, "priceCurrency"));
+      price.setPrice(JSONUtil.optFloat(json, "price"));
+      offer.setPrice(price);
+
+    } else if (json.has("lowPrice")) {
+      AlternatingPrice price = new AlternatingPrice();
+      price.setCurrency(JSONUtil.optString(json, "priceCurrency"));
+      price.setLowPrice(JSONUtil.optFloat(json, "lowPrice"));
+      price.setHighPrice(JSONUtil.optFloat(json, "highPrice"));
+      offer.setPrice(price);
+
+    }
+
+    offer.setSeller(unmarshalOrganization(JSONUtil.optJSONObject(json, "seller")));
 
     return offer;
+
+  }
+
+  public Organization unmarshalOrganization(JSONObject json) throws JSONException {
+
+    if (json == null) {
+      return null;
+    }
+
+    Organization organization = new Organization();
+
+    organization.setURL(JSONUtil.optString(json, "url"));
+    organization.setName(JSONUtil.optString(json, "name"));
+    organization.setDescription(JSONUtil.optString(json, "description"));
+    organization.setEmail(JSONUtil.optString(json, "email"));
+    organization.setTelephone(JSONUtil.optString(json, "telephone"));
+    organization.setPostalAddress(unmarshalPostalAddress(JSONUtil.optJSONObject(json, "address")));
+
+    return organization;
 
   }
 
@@ -161,8 +189,8 @@ public class EventJSONSerialization {
 
     show.setStatus(ShowStatus.valueOf(JSONUtil.optString(json, "status", ShowStatus.scheduled.name())));
     show.setNote(JSONUtil.optString(json, "note"));
-    show.setStartTimeEpochMilliseconds(JSONUtil.optUTC(json, "startTime"));
-    show.setEndTimeEpochMilliseconds(JSONUtil.optUTC(json, "endTime"));
+    show.setStartTimeEpochMilliseconds(JSONUtil.optDateTime(json, "startDate"));
+    show.setEndTimeEpochMilliseconds(JSONUtil.optDateTime(json, "endDate"));
 
     return show;
 

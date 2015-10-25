@@ -3,6 +3,7 @@ package se.helsingborg.event.util;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
 
 /**
  * @author kalle
@@ -17,25 +19,30 @@ import java.text.SimpleDateFormat;
  */
 public class JSONUtil {
 
-  public static Long optUTC(JSONObject json, String attribute) throws JSONException, ParseException {
+  private static Pattern utcMinutes = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d");
+  private static Pattern utcSeconds = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d:\\d?\\d");
+  private static Pattern utcMilliseconds = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d:\\d?\\d");
 
-    if (!json.has(attribute)) {
+  public static Long optDateTime(JSONObject json, String attribute) throws JSONException, ParseException {
+
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return null;
     }
 
-    String string = optString(json, attribute);
-    if (string == null) {
-      return null;
+    Object object = json.get(attribute);
+    if (object instanceof Long) {
+      return (Long)object;
+
+    } else if (object instanceof String) {
+      return ISODateTimeFormat.dateTimeParser().parseDateTime((String)object).getMillis();
+
     } else {
-
-      final DateTimeFormatter formatter2 = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-      return formatter2.parseMillis(string);
+      throw new UnsupportedOperationException("Not sure how to treat object as DateTime: " + object.toString());
     }
-
   }
 
   public static JSONObject optJSONObject(JSONObject json, String attribute) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return null;
     } else {
       return json.getJSONObject(attribute);
@@ -43,7 +50,7 @@ public class JSONUtil {
   }
 
   public static JSONArray optJSONArray(JSONObject json, String attribute) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return null;
     } else {
       return json.getJSONArray(attribute);
@@ -54,7 +61,7 @@ public class JSONUtil {
     return optString(json, attribute, null);
   }
   public static String optString(JSONObject json, String attribute, String fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return json.getString(attribute);
@@ -65,7 +72,7 @@ public class JSONUtil {
     return optBoolean(json, attribute, null);
   }
   public static Boolean optBoolean(JSONObject json, String attribute, Boolean fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return json.getBoolean(attribute);
@@ -76,7 +83,7 @@ public class JSONUtil {
     return optInteger(json, attribute, null);
   }
   public static Integer optInteger(JSONObject json, String attribute, Integer fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return json.getInt(attribute);
@@ -88,7 +95,7 @@ public class JSONUtil {
 
   }
   public static Long optLong(JSONObject json, String attribute, Long fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return json.getLong(attribute);
@@ -97,7 +104,7 @@ public class JSONUtil {
 
 
   public static Float getFloat(JSONObject json, String attribute) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       throw new JSONException("Missing attribute " + attribute);
     } else {
       return (float) json.getDouble(attribute);
@@ -108,7 +115,7 @@ public class JSONUtil {
     return optFloat(json, attribute, null);
   }
   public static Float optFloat(JSONObject json, String attribute, Float fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return (float) json.getDouble(attribute);
@@ -119,7 +126,7 @@ public class JSONUtil {
     return optDouble(json, attribute, null);
   }
   public static Double optDouble(JSONObject json, String attribute, Double fallback) throws JSONException {
-    if (!json.has(attribute)) {
+    if (!json.has(attribute) || json.isNull(attribute)) {
       return fallback;
     } else {
       return json.getDouble(attribute);

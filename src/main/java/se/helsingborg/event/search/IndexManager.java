@@ -166,11 +166,11 @@ public class IndexManager {
         if (event.getLocation().getPostalAddress().getPostalCode() != null) {
           document.add(new TextField(FIELD_EVENT_LOCATION_POSTAL_ADDRESS_POSTAL_CODE, event.getLocation().getPostalAddress().getPostalCode(), Field.Store.NO));
         }
-        if (event.getLocation().getPostalAddress().getPostalTown() != null) {
-          document.add(new TextField(FIELD_EVENT_LOCATION_POSTAL_ADDRESS_POSTAL_TOWN, event.getLocation().getPostalAddress().getPostalTown(), Field.Store.NO));
+        if (event.getLocation().getPostalAddress().getAddressLocality() != null) {
+          document.add(new TextField(FIELD_EVENT_LOCATION_POSTAL_ADDRESS_POSTAL_TOWN, event.getLocation().getPostalAddress().getAddressLocality(), Field.Store.NO));
         }
-        if (event.getLocation().getPostalAddress().getCountry() != null) {
-          document.add(new TextField(FIELD_EVENT_LOCATION_POSTAL_ADDRESS_COUNTRY, event.getLocation().getPostalAddress().getCountry(), Field.Store.NO));
+        if (event.getLocation().getPostalAddress().getAddressCountry() != null) {
+          document.add(new TextField(FIELD_EVENT_LOCATION_POSTAL_ADDRESS_COUNTRY, event.getLocation().getPostalAddress().getAddressCountry(), Field.Store.NO));
         }
 
       }
