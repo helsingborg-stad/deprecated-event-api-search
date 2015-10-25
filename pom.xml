@@ -19,10 +19,17 @@
 
   <dependencies>
 
+
     <dependency>
-      <groupId>se.kodapan.osm.common</groupId>
-      <artifactId>jts</artifactId>
-      <version>0.0.3-SNAPSHOT</version>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.9</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
     </dependency>
 
     <dependency>

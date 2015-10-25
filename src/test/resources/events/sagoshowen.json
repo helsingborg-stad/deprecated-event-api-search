@@ -1,0 +1,69 @@
+{
+  "eventId": 1,
+  "created": "2015-09-25T15:00",
+  "modified": "2015-09-25T15:01",
+  "tags": [
+    "Teater", "Berätteribolaget", "Dunkers kulturhus"
+  ],
+  "name": "Söndagscen: Sagoshowen med Berätteribolaget",
+  "description": "Berätteribolaget tar sig an folksagorna. Kritkreatör Kristiansson, Sångsnickare Simon och Muntlighetsminister Mikael har berättat tusen och åter tusen sagor. Med hjälp av publiken -som får rollen som nyanställda i bolaget- förflyttas sagorna i tid och rum. Sagorna får ny skrud och presenteras genom illustrationer, sånger och fysiskt, muntligt berättande. Inget äventyr är det andra likt. Inget äventyr är det andra likt. Kanske det kan bli en riktig skräckis denna gång? Publiken avgör…\n\nLåt er gärna inspireras av ett besök i vår utställning ”Skräckromantikens landskap”!\n\nÅlder: från 6 år\n\nAntal platser: 120\n\nSamarrangör: Medborgarskolan\n\nPlats: Teatersalen\n\nEntré: 50 kronor, köp biljett direkt via Ticnet eller i Dunkers biljettcentral",
+  "show": [
+    {
+      "startDate": "2015-10-25T15:00",
+      "endDate": "2015-10-25T17:00",
+      "status": null,
+      "note": null
+    }
+
+  ],
+  "image": "http://mittkulturkort.se/data/kulturkortet/media/calendar/image/62/91/40/6/5696/7392a71e80599bb1/thumbs/sagoshowenberatteribolagetkkkalender_691_389_DEFAULT_scale.jpg",
+  "location": {
+    "url": "http://www.dunkerskulturhus.se/",
+    "name": "Dunkers kulturhus, teatersalen",
+    "address": {
+      "name": "Dunkers kulturhus",
+      "streetAddress": "Kungsgatan 11",
+      "postalCode": "25189",
+      "addressLocality": "Helsingborg",
+      "addressCountry": "SE"
+    },
+    "email": "dunkers@helsingborg.se",
+    "telephone": "+4642107400",
+    "geo": {
+      "projection": "WGS84",
+      "latitude": 56.04779,
+      "longitude": 12.68906
+    }
+  },
+  "offers": [
+    {
+      "seller": {
+        "name": "Dunkers kulturhus",
+        "url": "http://www.dunkerskulturhus.se/",
+        "telephone": "+4642107400",
+        "email": "dunkers@helsingborg.se",
+        "address": {
+          "name": "Dunkers kulturhus",
+          "email": "dunkers@helsingborg.se",
+          "streetAddress": "Kungsgatan 11",
+          "postalCode": "25189",
+          "addressLocality": "Helsingborg",
+          "addressCountry": "SE"
+        }
+      },
+      "price": "50",
+      "priceCurrency": "SEK"
+    },
+    {
+      "seller": {
+        "name": "Ticnet",
+        "url": "http://ticnet.se/",
+        "telephone": "+46771707070",
+        "email": "info@ticnet.se"
+      },
+      "lowPrice": "55",
+      "highPrice": "75",
+      "priceCurrency": "SEK"
+    }
+  ]
+}

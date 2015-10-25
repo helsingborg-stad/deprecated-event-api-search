@@ -42,6 +42,8 @@ public class Service {
       throw new IOException("Could not mkdirs " + dataPath.getAbsolutePath());
     }
 
+    indexManager = new IndexManager();
+    indexManager.setDataPath(new File(dataPath, "lucene"));
     indexManager.open();
 
     log.info("Service has been started.");
@@ -61,10 +63,6 @@ public class Service {
     return properties;
   }
 
-  public void setProperties(Properties properties) {
-    this.properties = properties;
-  }
-
   public File getDataPath() {
     return dataPath;
   }
@@ -73,4 +71,7 @@ public class Service {
     this.dataPath = dataPath;
   }
 
+  public IndexManager getIndexManager() {
+    return indexManager;
+  }
 }
