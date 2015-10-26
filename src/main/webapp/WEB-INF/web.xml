@@ -20,7 +20,7 @@
 
   <servlet-mapping>
     <servlet-name>SearchServlet</servlet-name>
-    <url-pattern>/event/search</url-pattern>
+    <url-pattern>/v_0_0_1/event/search</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -30,7 +30,7 @@
 
   <servlet-mapping>
     <servlet-name>ReconstructIndexServlet</servlet-name>
-    <url-pattern>/event/reconstruct/complete</url-pattern>
+    <url-pattern>/v_0_0_1/event/reconstruct/complete</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -40,7 +40,7 @@
 
   <servlet-mapping>
     <servlet-name>EventModifiedServlet</servlet-name>
-    <url-pattern>/event/reconstruct/*</url-pattern>
+    <url-pattern>/v_0_0_1/event/reconstruct/*</url-pattern>
   </servlet-mapping>
 
 </web-app>
