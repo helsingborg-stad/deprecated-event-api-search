@@ -2,6 +2,7 @@ package se.helsingborg.event.search;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.helsingborg.event.PrimaryPersistence;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,8 @@ public class Service {
 
   private IndexManager indexManager;
 
+  private LocalPersistence localPersistence;
+
   public void open() throws Exception {
 
     log.info("Starting up...");
@@ -41,6 +44,11 @@ public class Service {
     if (!dataPath.exists() && !dataPath.mkdirs()) {
       throw new IOException("Could not mkdirs " + dataPath.getAbsolutePath());
     }
+
+
+    localPersistence = new LocalPersistence();
+    localPersistence.setFile(new File(dataPath, "local.json"));
+    localPersistence.open();
 
     indexManager = new IndexManager();
     indexManager.setDataPath(new File(dataPath, "lucene"));
@@ -73,5 +81,9 @@ public class Service {
 
   public IndexManager getIndexManager() {
     return indexManager;
+  }
+
+  public LocalPersistence getLocalPersistence() {
+    return localPersistence;
   }
 }

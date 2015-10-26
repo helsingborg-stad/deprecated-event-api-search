@@ -10,7 +10,7 @@ public class Location{
 
   private String name;
   private String telephone;
-  private String emailAddress;
+  private String email;
 
   private PostalAddress postalAddress;
 
@@ -41,12 +41,12 @@ public class Location{
     this.telephone = telephone;
   }
 
-  public String getEmailAddress() {
-    return emailAddress;
+  public String getEmail() {
+    return email;
   }
 
-  public void setEmailAddress(String emailAddress) {
-    this.emailAddress = emailAddress;
+  public void setEmail(String emailAddress) {
+    this.email = emailAddress;
   }
 
   public PostalAddress getPostalAddress() {

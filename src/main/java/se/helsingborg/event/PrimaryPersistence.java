@@ -1,4 +1,4 @@
-package se.helsingborg.event.search;
+package se.helsingborg.event;
 
 import org.json.JSONObject;
 import se.helsingborg.event.domin.Event;

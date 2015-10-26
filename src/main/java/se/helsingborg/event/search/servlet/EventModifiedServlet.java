@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.helsingborg.event.SystemErrorManager;
 import se.helsingborg.event.domin.Event;
-import se.helsingborg.event.search.PrimaryPersistence;
+import se.helsingborg.event.PrimaryPersistence;
 import se.helsingborg.event.search.Service;
 
 import javax.servlet.ServletException;

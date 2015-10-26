@@ -74,7 +74,7 @@ public class EventJSONSerialization {
     }
 
     Location location = new Location();
-    location.setEmailAddress(JSONUtil.optString(json, "emailAddress"));
+    location.setEmail(JSONUtil.optString(json, "email"));
     location.setGeo(unmarshalGeo(JSONUtil.optJSONObject(json, "geo")));
     location.setName(JSONUtil.optString(json, "name"));
     location.setPostalAddress(unmarshalPostalAddress(JSONUtil.optJSONObject(json, "address")));
