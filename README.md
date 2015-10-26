@@ -126,4 +126,12 @@ an service that reports the errors to an administrator, the service sends the er
 
 Local error, warning, info and debug logging is of course however alive and kicking.
 
+## SystemErrorService
+
+A single endpoint for all services, not only search, allows for changing logging solution
+without changing the code in the dependent services.
+
 ## Geocoding Service
+
+When location is missing coordinates one needs to geocode. A single endpoint for all services, not only search, allows
+for changing geocoding provider without changing the code in the dependent services.
