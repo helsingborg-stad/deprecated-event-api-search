@@ -98,14 +98,10 @@ In descending order of priority.
 There is no implement connection to Wordpress. Only a mockup.
 Without this there is no data in the index.
 
-4 hours of work?
-
 ## IndexUpdateManager
 
 Connects to the primary persistence and receive events created or modified since previous call.
 Without this there is no data in the index.
-
-2 hours of work?
 
 ## More ad hoc queries
 
