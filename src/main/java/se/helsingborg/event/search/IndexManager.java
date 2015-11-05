@@ -5,7 +5,6 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.helsingborg.event.domin.*;
@@ -79,7 +78,7 @@ public class IndexManager {
 
     directory = FSDirectory.open(dataPath.toPath());
 
-    IndexWriterConfig indexWriterConfig = new IndexWriterConfig(EventIndexAnalyzerFactory.factory());
+    IndexWriterConfig indexWriterConfig = new IndexWriterConfig(new EventIndexAnalyzerBuilder().build());
     indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
     indexWriter = new IndexWriter(directory, indexWriterConfig);
@@ -145,7 +144,7 @@ public class IndexManager {
 
     if (event.getTags() != null && !event.getTags().isEmpty()) {
       for (String tag : event.getTags()) {
-        document.add(new StringField(FIELD_EVENT_TAG, tag, Field.Store.NO));
+        document.add(new TextField(FIELD_EVENT_TAG, tag, Field.Store.NO));
       }
 
 

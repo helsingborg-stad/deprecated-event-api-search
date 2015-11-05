@@ -14,7 +14,7 @@ import se.helsingborg.event.search.IndexManager;
 public class JSONQuerySerialization {
 
 
-  public Query parse(JSONObject jsonQuery) throws JSONException {
+  public Query parse(JSONObject jsonQuery) throws Exception {
 
     String type = jsonQuery.getString("type");
     if ("boolean query".equalsIgnoreCase(type)) {
@@ -123,6 +123,10 @@ public class JSONQuerySerialization {
  *  EVENT-API Specific queries
  *
  */
+
+    } else if ("event text".equalsIgnoreCase(type)) {
+
+      return new EventTextQueryBuilder().setText(jsonQuery.getString("text")).build();
 
     } else if ("event tags".equalsIgnoreCase(type)) {
 
