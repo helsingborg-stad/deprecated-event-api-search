@@ -133,6 +133,14 @@ public class JSONQuerySerialization {
       }
       return query.build();
 
+    } else if ("future events".equalsIgnoreCase(type)) {
+
+      return NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, System.currentTimeMillis(), Long.MAX_VALUE, false, true);
+
+    } else if ("past events".equalsIgnoreCase(type)) {
+
+      return NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, Long.MIN_VALUE, System.currentTimeMillis(), true, false);
+
     } else if ("event location coordinate envelope".equalsIgnoreCase(type)) {
 
       return new CoordinateEnvelopeQueryFactory()
