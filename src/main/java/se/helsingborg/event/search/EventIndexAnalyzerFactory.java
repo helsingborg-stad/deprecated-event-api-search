@@ -18,7 +18,8 @@ public class EventIndexAnalyzerFactory  {
 
   public static Analyzer factory() throws Exception {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
-    return new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_45, new StringReader("")), fieldAnalyzers);
+    /** standard analyzer with no stop words */
+    return new PerFieldAnalyzerWrapper(new StandardAnalyzer(new StringReader("")), fieldAnalyzers);
   }
 
 }

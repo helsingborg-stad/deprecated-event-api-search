@@ -6,7 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import se.helsingborg.event.search.IndexManager;
-import se.helsingborg.event.util.JSONUtil;
 
 /**
  * @author kalle
@@ -20,7 +19,7 @@ public class JSONQuerySerialization {
     String type = jsonQuery.getString("type");
     if ("boolean query".equalsIgnoreCase(type)) {
 
-      BooleanQuery booleanQuery = new BooleanQuery();
+      BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
 
       JSONArray jsonClauses = jsonQuery.getJSONArray("clauses");
 
@@ -44,7 +43,7 @@ public class JSONQuerySerialization {
 
       }
 
-      return booleanQuery;
+      return booleanQuery.build();
 
     } else if ("match all documents".equalsIgnoreCase(type)) {
 
@@ -127,12 +126,12 @@ public class JSONQuerySerialization {
 
     } else if ("event tags".equalsIgnoreCase(type)) {
 
-      BooleanQuery query = new BooleanQuery();
+      BooleanQuery.Builder query = new BooleanQuery.Builder();
       JSONArray values = jsonQuery.getJSONArray("values");
       for (int i = 0; i < values.length(); i++) {
         query.add(new BooleanClause(new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, values.getString(i).toUpperCase())), BooleanClause.Occur.MUST));
       }
-      return query;
+      return query.build();
 
     } else if ("event location coordinate envelope".equalsIgnoreCase(type)) {
 

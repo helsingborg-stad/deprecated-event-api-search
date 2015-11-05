@@ -26,6 +26,8 @@ public class EventJSONSerialization {
     event.setEventId(JSONUtil.optLong(json, "eventId"));
 
 
+    event.setUrl(JSONUtil.optString(json, "url"));
+
     event.setName(JSONUtil.optString(json, "name"));
     event.setDescription(JSONUtil.optString(json, "description"));
 
@@ -79,7 +81,7 @@ public class EventJSONSerialization {
     location.setName(JSONUtil.optString(json, "name"));
     location.setPostalAddress(unmarshalPostalAddress(JSONUtil.optJSONObject(json, "address")));
     location.setTelephone(JSONUtil.optString(json, "telephone"));
-    location.setURL(JSONUtil.optString(json, "url"));
+    location.setUrl(JSONUtil.optString(json, "url"));
 
     return location;
 
@@ -168,7 +170,7 @@ public class EventJSONSerialization {
 
     Organization organization = new Organization();
 
-    organization.setURL(JSONUtil.optString(json, "url"));
+    organization.setUrl(JSONUtil.optString(json, "url"));
     organization.setName(JSONUtil.optString(json, "name"));
     organization.setDescription(JSONUtil.optString(json, "description"));
     organization.setEmail(JSONUtil.optString(json, "email"));

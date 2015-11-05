@@ -8,7 +8,7 @@ public class Organization {
 
   private String name;
   private String description;
-  private String URL;
+  private String url;
   private String telephone;
   private String email;
   private PostalAddress postalAddress;
@@ -29,12 +29,12 @@ public class Organization {
     this.description = description;
   }
 
-  public String getURL() {
-    return URL;
+  public String getUrl() {
+    return url;
   }
 
-  public void setURL(String URL) {
-    this.URL = URL;
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   public String getTelephone() {

@@ -6,7 +6,7 @@ package se.helsingborg.event.domin;
  */
 public class Location{
 
-  private String URL;
+  private String url;
 
   private String name;
   private String telephone;
@@ -17,12 +17,12 @@ public class Location{
   private Geo geo;
 
 
-  public String getURL() {
-    return URL;
+  public String getUrl() {
+    return url;
   }
 
-  public void setURL(String URL) {
-    this.URL = URL;
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   public String getName() {

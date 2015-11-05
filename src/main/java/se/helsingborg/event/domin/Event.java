@@ -10,6 +10,7 @@ import java.util.Set;
 public class Event {
 
   private Long eventId;
+  private String url;
   private String name;
   private String description;
   private String imageURL;
@@ -19,10 +20,17 @@ public class Event {
 
   private Set<String> tags;
 
-
   private long createdEpochMilliseconds;
   private long modifiedEpochMilliseconds;
 
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
   public Long getEventId() {
     return eventId;

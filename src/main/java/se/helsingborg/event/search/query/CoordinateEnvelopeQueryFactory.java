@@ -78,7 +78,7 @@ public class CoordinateEnvelopeQueryFactory {
       return new MatchAllDocsQuery();
     }
 
-    BooleanQuery query = new BooleanQuery();
+    BooleanQuery.Builder query = new BooleanQuery.Builder();
 
     query.add(NumericRangeQuery.newDoubleRange(latitudeField, south, north, true, true), BooleanClause.Occur.MUST);
 
@@ -88,17 +88,17 @@ public class CoordinateEnvelopeQueryFactory {
 
     } else {
 
-      BooleanQuery longitudeQuery = new BooleanQuery();
+      BooleanQuery.Builder longitudeQuery = new BooleanQuery.Builder();
 
       longitudeQuery.add(NumericRangeQuery.newDoubleRange(longitudeField, -180d, west, true, true), BooleanClause.Occur.SHOULD);
       longitudeQuery.add(NumericRangeQuery.newDoubleRange(longitudeField, east, 180d, true, true), BooleanClause.Occur.SHOULD);
 
-      query.add(longitudeQuery, BooleanClause.Occur.MUST);
+      query.add(longitudeQuery.build(), BooleanClause.Occur.MUST);
 
 
     }
 
-    return query;
+    return query.build();
 
   }
 

@@ -8,10 +8,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.helsingborg.event.domin.Event;
-import se.helsingborg.event.domin.GeoCoordinates;
-import se.helsingborg.event.domin.GeoVisitor;
-import se.helsingborg.event.domin.Show;
+import se.helsingborg.event.domin.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +29,7 @@ public class IndexManager {
 
   public static final String FIELD_EVENT_CREATED = "Event#created";
   public static final String FIELD_EVENT_MODIFIED = "Event#modified";
+
 
   // todo: future, index bboxes rather than coordinates in order to query for polygons.
 //  public static final String FIELD_EVENT_LOCATION_GEO_SOUTH_LATITUDE = "Event.location.geo#south latitude";
@@ -55,6 +53,8 @@ public class IndexManager {
   public static final String FIELD_EVENT_LOCATION_POSTAL_ADDRESS_POSTAL_TOWN = "Event.location.postalAddress#postal town";
   public static final String FIELD_EVENT_LOCATION_POSTAL_ADDRESS_COUNTRY = "Event.location.postalAddress#postal country";
 
+  public static final String FIELD_EVENT_SHOW_STATUS = "Event.show#status";
+
   public static final String FIELD_EVENT_SHOW_START_DATE_TIME = "Event.show#start date time";
   public static final String FIELD_EVENT_SHOW__END_DATE_TIME = "Event.show#end date time";
 
@@ -77,9 +77,9 @@ public class IndexManager {
       log.error("Could not mkdirs " + dataPath.getAbsolutePath());
     }
 
-    directory = FSDirectory.open(dataPath);
+    directory = FSDirectory.open(dataPath.toPath());
 
-    IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_45, EventIndexAnalyzerFactory.factory());
+    IndexWriterConfig indexWriterConfig = new IndexWriterConfig(EventIndexAnalyzerFactory.factory());
     indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
     indexWriter = new IndexWriter(directory, indexWriterConfig);
@@ -133,6 +133,8 @@ public class IndexManager {
 
     document.add(new LongField(FIELD_EVENT_CREATED, event.getCreatedEpochMilliseconds(), StoredField.Store.NO));
     document.add(new LongField(FIELD_EVENT_MODIFIED, event.getModifiedEpochMilliseconds(), StoredField.Store.NO));
+
+
 
     if (event.getName() != null) {
       document.add(new TextField(FIELD_EVENT_NAME, event.getName(), Field.Store.NO));
@@ -205,12 +207,16 @@ public class IndexManager {
 
     Document document = documentFactory(event);
 
+    document.add(new StringField(FIELD_EVENT_SHOW_STATUS, show.getStatus() != null ? show.getStatus().name() : ShowStatus.scheduled.name(), StoredField.Store.NO));
+
     document.add(new LongField(FIELD_EVENT_SHOW_START_DATE_TIME, show.getStartTimeEpochMilliseconds(), StoredField.Store.NO));
     if (show.getEndTimeEpochMilliseconds() != null) {
       document.add(new LongField(FIELD_EVENT_SHOW__END_DATE_TIME, show.getEndTimeEpochMilliseconds(), StoredField.Store.NO));
     } else {
       // todo: what sort of queries is required?
     }
+
+
 
     return document;
 
@@ -229,41 +235,38 @@ public class IndexManager {
 
 
       indexSearcher.search(indexRequest.getQuery(), new Collector() {
-
-        Scorer scorer;
-        AtomicReaderContext context;
-        NumericDocValues identityValues;
-
         @Override
-        public void setScorer(Scorer scorer) throws IOException {
-          this.scorer = scorer;
+        public LeafCollector getLeafCollector(final LeafReaderContext leafReaderContext) throws IOException {
+          return new LeafCollector() {
+            Scorer scorer;
+            NumericDocValues identityValues;
+
+            @Override
+            public void setScorer(Scorer scorer) throws IOException {
+              this.scorer = scorer;
+            }
+
+            @Override
+            public void collect(int doc) throws IOException {
+              totalNumberOfSearchResults.incrementAndGet();
+              if (identityValues == null) {
+                identityValues = leafReaderContext.reader().getNumericDocValues(FIELD_EVENT_IDENTITY_VALUE);
+              }
+              float score = scorer.score();
+              long eventId = identityValues.get(doc);
+              Float previousScore = eventIdsAndScore.get(eventId);
+              if (previousScore == null || score > previousScore) {
+                eventIdsAndScore.put(eventId, score);
+              }
+            }
+          };
         }
 
         @Override
-        public void collect(int doc) throws IOException {
-          totalNumberOfSearchResults.incrementAndGet();
-          if (identityValues == null) {
-            identityValues = context.reader().getNumericDocValues(FIELD_EVENT_IDENTITY_VALUE);
-          }
-          float score = scorer.score();
-          long eventId = identityValues.get(doc);
-          Float previousScore = eventIdsAndScore.get(eventId);
-          if (previousScore == null || score > previousScore) {
-            eventIdsAndScore.put(eventId, score);
-          }
-
-        }
-
-        @Override
-        public void setNextReader(AtomicReaderContext context) throws IOException {
-          this.context = context;
-          identityValues = null;
-        }
-
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
+        public boolean needsScores() {
           return true;
         }
+
       });
 
 
@@ -283,14 +286,13 @@ public class IndexManager {
     IndexResults indexResults = new IndexResults();
     indexResults.setTotalNumberOfSearchResults(totalNumberOfSearchResults.get());
     indexResults.setIndexResults(new ArrayList<IndexResult>(indexRequest.getLimit()));
-    for (int i=indexRequest.getStartIndex(); i<indexRequest.getLimit() + indexRequest.getStartIndex() && i<eventIdsAndScore.size(); i++) {
+    for (int i = indexRequest.getStartIndex(); i < indexRequest.getLimit() + indexRequest.getStartIndex() && i < eventIdsAndScore.size(); i++) {
       Map.Entry<Long, Float> eventIdAndScore = eventIdAndScoresOrdered.get(i);
       IndexResult indexResult = new IndexResult();
       indexResult.setScore(eventIdAndScore.getValue());
       indexResult.setEventId(eventIdAndScore.getKey());
       indexResults.getIndexResults().add(indexResult);
     }
-
 
     return indexResults;
 

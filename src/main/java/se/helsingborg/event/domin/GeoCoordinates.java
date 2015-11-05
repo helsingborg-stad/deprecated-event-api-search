@@ -9,6 +9,14 @@ public class GeoCoordinates extends Geo {
   private double latitude;
   private double longitude;
 
+  public GeoCoordinates() {
+  }
+
+  public GeoCoordinates(double latitude, double longitude) {
+    this.latitude = latitude;
+    this.longitude = longitude;
+  }
+
   @Override
   public <R> R accept(GeoVisitor<R> visitor) {
     return visitor.visit(this);
