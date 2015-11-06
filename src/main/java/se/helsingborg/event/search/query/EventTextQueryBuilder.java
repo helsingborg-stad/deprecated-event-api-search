@@ -8,8 +8,14 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
 import se.helsingborg.event.search.EventIndexAnalyzerBuilder;
 import se.helsingborg.event.search.IndexManager;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * @author kalle
@@ -28,19 +34,148 @@ public class EventTextQueryBuilder {
 
   private String text;
 
+  private DisjunctionMaxQuery disjunctionMaxQuery;
+
+
   public Query build() throws Exception {
 
     if (analyzer == null) {
       analyzer = new EventIndexAnalyzerBuilder().build();
     }
 
-    DisjunctionMaxQuery query = new DisjunctionMaxQuery(tieBreakerMultiplier);
+    disjunctionMaxQuery = new DisjunctionMaxQuery(tieBreakerMultiplier);
 
-    query.add(tagQueryFactory());
-    query.add(nameQueryFactory());
+    tagQueryFactory();
+    nameQueryFactory();
+    descriptionQueryFactory();
 
-    return query;
+    return disjunctionMaxQuery;
   }
+
+
+  private void nameQueryFactory() throws Exception {
+    textQueryFactory(IndexManager.FIELD_EVENT_NAME, nameBoost);
+  }
+
+  private void descriptionQueryFactory() throws Exception {
+    textQueryFactory(IndexManager.FIELD_EVENT_DESCRIPTION, descriptionBoost);
+  }
+
+
+  private void textQueryFactory(String field, float boost) throws Exception {
+
+    textTokenQueryFactory(field, boost);
+    // todo multiple phrases with low slop, order and configurable boost factors
+    textPhraseQueryFactory(field, boost, Integer.MAX_VALUE, false);
+
+
+  }
+
+  private void textTokenQueryFactory(String field, float boost) throws IOException {
+    TokenStream ts = analyzer.tokenStream(field, new StringReader(text));
+    try {
+      ts.reset();
+      CharTermAttribute charTermAttribute = ts.addAttribute(CharTermAttribute.class);
+
+      while (ts.incrementToken()) {
+        String token = charTermAttribute.toString();
+        TermQuery termQuery = new TermQuery(new Term(field, token));
+        termQuery.setBoost(boost);
+        disjunctionMaxQuery.add(termQuery);
+      }
+    } finally {
+      ts.close();
+    }
+  }
+
+  private void textPhraseQueryFactory(String field, float boost, int slop, boolean ordered) throws IOException {
+
+    SpanNearQuery.Builder phraseQuery = new SpanNearQuery.Builder(field, ordered);
+    phraseQuery.setSlop(slop);
+
+    TokenStream ts = analyzer.tokenStream(field, new StringReader(text));
+    try {
+      ts.reset();
+      CharTermAttribute charTermAttribute = ts.addAttribute(CharTermAttribute.class);
+
+      while (ts.incrementToken()) {
+        String token = charTermAttribute.toString();
+        SpanTermQuery termQuery = new SpanTermQuery(new Term(field, token));
+        phraseQuery.addClause(termQuery);
+      }
+    } finally {
+      ts.close();
+    }
+
+    Query query = phraseQuery.build();
+    query.setBoost(boost);
+    disjunctionMaxQuery.add(query);
+  }
+
+  private void tagQueryFactory() throws Exception {
+
+    tagTokenQueryFactory();
+    tagShingleTokenQueryFactory();
+
+  }
+
+  private void tagShingleTokenQueryFactory() throws IOException {
+    /**
+     * add shingle tokens
+     * "dunkel kulturhus helsingborg" ->
+     * "dunkel kulturhus",
+     * "kulturhus helsingborg"
+     * "dunkel kulturhus helsingborg"
+     */
+
+    // todo whitespace analyzer?
+    TokenStream ts = new StandardAnalyzer().tokenStream(IndexManager.FIELD_EVENT_TAG, text);
+    LowerCaseFilter lowerCaseFilter = new LowerCaseFilter(ts);
+
+    ShingleFilter shingleFilter = new ShingleFilter(lowerCaseFilter);
+    shingleFilter.setFillerToken(" ");
+    shingleFilter.setMinShingleSize(2);
+    shingleFilter.setMaxShingleSize(3);
+    shingleFilter.setOutputUnigrams(false);
+    shingleFilter.reset();
+
+    CharTermAttribute charTermAttribute = shingleFilter.addAttribute(CharTermAttribute.class);
+
+    while (shingleFilter.incrementToken()) {
+      String token = charTermAttribute.toString();
+      TermQuery termQuery = new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, token));
+      termQuery.setBoost(tagBoost);
+      disjunctionMaxQuery.add(termQuery);
+    }
+
+    shingleFilter.close();
+  }
+
+  private void tagTokenQueryFactory() throws IOException {
+    /**
+     * add non shingle tokens
+     * "dunkel kulturhus helsingorg" ->
+     * "dunkel",
+     * "kulturhus",
+     * "helsingborg"
+     */
+
+    // todo whitespace analyzer?
+    TokenStream ts = new StandardAnalyzer().tokenStream(IndexManager.FIELD_EVENT_TAG, text);
+    LowerCaseFilter lowerCaseFilter = new LowerCaseFilter(ts);
+    lowerCaseFilter.reset();
+
+    CharTermAttribute charTermAttribute = lowerCaseFilter.addAttribute(CharTermAttribute.class);
+
+    while (lowerCaseFilter.incrementToken()) {
+      TermQuery termQuery = new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, charTermAttribute.toString()));
+      termQuery.setBoost(tagBoost);
+      disjunctionMaxQuery.add(termQuery);
+    }
+
+    lowerCaseFilter.close();
+  }
+
 
   public String getText() {
     return text;
@@ -58,60 +193,6 @@ public class EventTextQueryBuilder {
   public EventTextQueryBuilder setTieBreakerMultiplier(float tieBreakerMultiplier) {
     this.tieBreakerMultiplier = tieBreakerMultiplier;
     return this;
-  }
-
-  private Query nameQueryFactory() throws Exception {
-    Query query = textQueryFactory(IndexManager.FIELD_EVENT_NAME);
-    query.setBoost(nameBoost);
-    return query;
-  }
-
-  private Query descriptionQueryFactory() throws Exception {
-    Query query = textQueryFactory(IndexManager.FIELD_EVENT_DESCRIPTION);
-    query.setBoost(descriptionBoost);
-    return query;
-  }
-
-  private Query textQueryFactory(String field) throws Exception {
-
-    BooleanQuery.Builder query = new BooleanQuery.Builder();
-
-    TokenStream ts = analyzer.tokenStream(field, text);
-    ts.reset();
-    CharTermAttribute charTermAttribute = ts.addAttribute(CharTermAttribute.class);
-
-    while (ts.incrementToken()) {
-      TermQuery termQuery = new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, charTermAttribute.toString()));
-      query.add(termQuery, BooleanClause.Occur.SHOULD);
-    }
-
-    return query.build();
-
-  }
-
-  private Query tagQueryFactory() throws Exception {
-
-    BooleanQuery.Builder query = new BooleanQuery.Builder();
-
-    // todo whitespace analyzer?
-    TokenStream ts = new StandardAnalyzer().tokenStream(IndexManager.FIELD_EVENT_TAG, text);
-    ts = new LowerCaseFilter(ts);
-    ShingleFilter shingleFilter = new ShingleFilter(ts);
-    shingleFilter.setFillerToken(" ");
-    shingleFilter.setMinShingleSize(1);
-    shingleFilter.setMaxShingleSize(3);
-    shingleFilter.reset();
-
-    CharTermAttribute charTermAttribute = shingleFilter.addAttribute(CharTermAttribute.class);
-
-    while (shingleFilter.incrementToken()) {
-      TermQuery termQuery = new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, charTermAttribute.toString()));
-      termQuery.setBoost(tagBoost);
-      query.add(termQuery, BooleanClause.Occur.SHOULD);
-    }
-
-    return query.build();
-
   }
 
 
