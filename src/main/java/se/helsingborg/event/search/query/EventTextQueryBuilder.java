@@ -49,6 +49,10 @@ public class EventTextQueryBuilder {
     nameQueryFactory();
     descriptionQueryFactory();
 
+    // todo location text
+    // todo offer text
+
+
     return disjunctionMaxQuery;
   }
 
