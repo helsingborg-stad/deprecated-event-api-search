@@ -23,7 +23,6 @@ public class Event {
   private long createdEpochMilliseconds;
   private long modifiedEpochMilliseconds;
 
-
   public String getUrl() {
     return url;
   }
@@ -111,4 +110,6 @@ public class Event {
   public void setModifiedEpochMilliseconds(long modifiedEpochMilliseconds) {
     this.modifiedEpochMilliseconds = modifiedEpochMilliseconds;
   }
+
+
 }

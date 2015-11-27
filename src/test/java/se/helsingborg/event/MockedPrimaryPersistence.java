@@ -26,18 +26,16 @@ public class MockedPrimaryPersistence extends PrimaryPersistence {
     persistence.disconnect();
   }
 
-  private Map<Long, Event> events;
+  private Map<Long, JSONObject> events;
 
   public void connect() throws Exception {
-
-    EventJSONSerialization eventJSONSerialization = new EventJSONSerialization();
 
     events = new HashMap<>();
     for (File file : new File("src/test/resources/events").listFiles()) {
       if (file.getName().endsWith(".json")) {
         System.out.println(file.getAbsoluteFile());
-        Event event = eventJSONSerialization.unmarshalEvent(new JSONObject(new JSONTokener(new InputStreamReader(new FileInputStream(file), "UTF8"))));
-        events.put(event.getEventId(), event);
+        JSONObject event = new JSONObject(new JSONTokener(new InputStreamReader(new FileInputStream(file), "UTF8")));
+        events.put(event.getLong("eventId"), event);
       }
     }
 
@@ -48,16 +46,16 @@ public class MockedPrimaryPersistence extends PrimaryPersistence {
     events = null;
   }
 
-  public Event getEvent(long eventId) throws Exception {
+  public JSONObject getEvent(long eventId) throws Exception {
     return events.get(eventId);
   }
 
-  public Iterator<Event> export() throws Exception {
-    return new HashSet<Event>(events.values()).iterator();
+  public Iterator<JSONObject> export() throws Exception {
+    return new HashSet<JSONObject>(events.values()).iterator();
   }
 
-  public Iterator<Event> listUpdated(long sinceDateTimeEpochMilliseconds) throws Exception {
-    return new HashSet<Event>(events.values()).iterator();
+  public Iterator<JSONObject> listUpdated(long sinceDateTimeEpochMilliseconds) throws Exception {
+    return new HashSet<JSONObject>(events.values()).iterator();
   }
 
 }

@@ -19,15 +19,15 @@ public class PrimaryPersistence {
 
   }
 
-  public Event getEvent(long eventId) throws Exception {
+  public JSONObject getEvent(long eventId) throws Exception {
     throw new UnsupportedOperationException("Not implmented");
   }
 
-  public Iterator<Event> export() throws Exception {
+  public Iterator<JSONObject> export() throws Exception {
     throw new UnsupportedOperationException("Not implmented");
   }
 
-  public Iterator<Event> listUpdated(long sinceDateTimeEpochMilliseconds) throws Exception {
+  public Iterator<JSONObject> listUpdated(long sinceDateTimeEpochMilliseconds) throws Exception {
     throw new UnsupportedOperationException("Not implmented");
   }
 

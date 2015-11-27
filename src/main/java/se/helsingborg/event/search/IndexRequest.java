@@ -8,6 +8,8 @@ import org.apache.lucene.search.Query;
  */
 public class IndexRequest {
 
+  private boolean scoring;
+  private boolean jsonOutput;
   private String reference;
   private int startIndex;
   private int limit;
@@ -44,5 +46,21 @@ public class IndexRequest {
 
   public void setQuery(Query query) {
     this.query = query;
+  }
+
+  public boolean isJsonOutput() {
+    return jsonOutput;
+  }
+
+  public void setJsonOutput(boolean jsonOutput) {
+    this.jsonOutput = jsonOutput;
+  }
+
+  public boolean isScoring() {
+    return scoring;
+  }
+
+  public void setScoring(boolean scoring) {
+    this.scoring = scoring;
   }
 }

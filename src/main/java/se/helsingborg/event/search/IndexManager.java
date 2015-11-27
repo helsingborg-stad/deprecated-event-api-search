@@ -5,6 +5,8 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.helsingborg.event.domin.*;
@@ -25,6 +27,7 @@ public class IndexManager {
 
   public static final String FIELD_EVENT_IDENTITY_INDEXED = "Event#identity";
   public static final String FIELD_EVENT_IDENTITY_VALUE = "Event#identity[value]";
+  public static final String FIELD_EVENT_JSON_VALUE = "Event#json[value]";
 
   public static final String FIELD_EVENT_CREATED = "Event#created";
   public static final String FIELD_EVENT_MODIFIED = "Event#modified";
@@ -100,7 +103,12 @@ public class IndexManager {
   }
 
 
-  public void updateIndex(Event event) throws Exception {
+  public void commit() throws Exception {
+    indexWriter.commit();
+    searcherManager.maybeRefresh();
+  }
+
+  public void updateIndex(Event event, JSONObject json) throws Exception {
 
     List<Document> documents = new ArrayList<>();
 
@@ -108,10 +116,10 @@ public class IndexManager {
 
     if (event.getShows() != null && !event.getShows().isEmpty()) {
       for (Show show : event.getShows()) {
-        documents.add(documentFactory(event, show));
+        documents.add(documentFactory(event, json, show));
       }
     } else {
-      documents.add(documentFactory(event));
+      documents.add(documentFactory(event, json));
     }
 
     Term identityTerm = new Term(FIELD_EVENT_IDENTITY_INDEXED, eventIdString);
@@ -121,18 +129,19 @@ public class IndexManager {
   }
 
 
-  private Document documentFactory(Event event) throws Exception {
+  private Document documentFactory(Event event, JSONObject json) throws Exception {
 
     String eventIdString = String.valueOf(event.getEventId());
 
     final Document document = new Document();
+
+    document.add(new BinaryDocValuesField(FIELD_EVENT_JSON_VALUE, new BytesRef(json.toString())));
 
     document.add(new NumericDocValuesField(FIELD_EVENT_IDENTITY_VALUE, event.getEventId()));
     document.add(new StringField(FIELD_EVENT_IDENTITY_INDEXED, eventIdString, Field.Store.NO));
 
     document.add(new LongField(FIELD_EVENT_CREATED, event.getCreatedEpochMilliseconds(), StoredField.Store.NO));
     document.add(new LongField(FIELD_EVENT_MODIFIED, event.getModifiedEpochMilliseconds(), StoredField.Store.NO));
-
 
 
     if (event.getName() != null) {
@@ -202,9 +211,9 @@ public class IndexManager {
 
   }
 
-  private Document documentFactory(Event event, Show show) throws Exception {
+  private Document documentFactory(Event event, JSONObject json, Show show) throws Exception {
 
-    Document document = documentFactory(event);
+    Document document = documentFactory(event, json);
 
     document.add(new StringField(FIELD_EVENT_SHOW_STATUS, show.getStatus() != null ? show.getStatus().name() : ShowStatus.scheduled.name(), StoredField.Store.NO));
 
@@ -216,18 +225,15 @@ public class IndexManager {
     }
 
 
-
     return document;
 
   }
 
 
-  public IndexResults search(IndexRequest indexRequest) throws Exception {
-
-    final AtomicInteger totalNumberOfSearchResults = new AtomicInteger();
+  public IndexResults search(final IndexRequest indexRequest) throws Exception {
 
     /** Multiple index points for the same event, i.e. shows on multiple dates. */
-    final Map<Long, Float> eventIdsAndScore = new HashMap<>();
+    final Map<Long, IndexResult> indexResultsById = new HashMap<>();
 
     IndexSearcher indexSearcher = searcherManager.acquire();
     try {
@@ -239,6 +245,7 @@ public class IndexManager {
           return new LeafCollector() {
             Scorer scorer;
             NumericDocValues identityValues;
+            BinaryDocValues jsonValues;
 
             @Override
             public void setScorer(Scorer scorer) throws IOException {
@@ -247,15 +254,28 @@ public class IndexManager {
 
             @Override
             public void collect(int doc) throws IOException {
-              totalNumberOfSearchResults.incrementAndGet();
               if (identityValues == null) {
                 identityValues = leafReaderContext.reader().getNumericDocValues(FIELD_EVENT_IDENTITY_VALUE);
               }
-              float score = scorer.score();
+
               long eventId = identityValues.get(doc);
-              Float previousScore = eventIdsAndScore.get(eventId);
-              if (previousScore == null || score > previousScore) {
-                eventIdsAndScore.put(eventId, score);
+              IndexResult searchResult = indexResultsById.get(eventId);
+              if (searchResult == null) {
+                searchResult = new IndexResult();
+                searchResult.setEventId(eventId);
+                indexResultsById.put(eventId, searchResult);
+              }
+              if (indexRequest.isJsonOutput() && searchResult.getJson() == null) {
+                if (jsonValues == null) {
+                  jsonValues = leafReaderContext.reader().getBinaryDocValues(FIELD_EVENT_JSON_VALUE);
+                }
+                searchResult.setJson(jsonValues.get(doc).utf8ToString());
+              }
+              if (indexRequest.isScoring()) {
+                float score = scorer.score();
+                if (searchResult.getScore() < score) {
+                  searchResult.setScore(score);
+                }
               }
             }
           };
@@ -274,23 +294,20 @@ public class IndexManager {
     }
 
 
-    List<Map.Entry<Long, Float>> eventIdAndScoresOrdered = new ArrayList<>(eventIdsAndScore.entrySet());
-    Collections.sort(eventIdAndScoresOrdered, new Comparator<Map.Entry<Long, Float>>() {
+    List<IndexResult> orderedIndexResults = new ArrayList<>(indexResultsById.values());
+    // todo sort order
+    Collections.sort(orderedIndexResults, new Comparator<IndexResult>() {
       @Override
-      public int compare(Map.Entry<Long, Float> o1, Map.Entry<Long, Float> o2) {
-        return o1.getValue().compareTo(o2.getValue());
+      public int compare(IndexResult o1, IndexResult o2) {
+        return Float.compare(o1.getScore(), o2.getScore());
       }
     });
 
     IndexResults indexResults = new IndexResults();
-    indexResults.setTotalNumberOfSearchResults(totalNumberOfSearchResults.get());
+    indexResults.setTotalNumberOfSearchResults(orderedIndexResults.size());
     indexResults.setIndexResults(new ArrayList<IndexResult>(indexRequest.getLimit()));
-    for (int i = indexRequest.getStartIndex(); i < indexRequest.getLimit() + indexRequest.getStartIndex() && i < eventIdsAndScore.size(); i++) {
-      Map.Entry<Long, Float> eventIdAndScore = eventIdAndScoresOrdered.get(i);
-      IndexResult indexResult = new IndexResult();
-      indexResult.setScore(eventIdAndScore.getValue());
-      indexResult.setEventId(eventIdAndScore.getKey());
-      indexResults.getIndexResults().add(indexResult);
+    for (int i = indexRequest.getStartIndex(); i < indexRequest.getLimit() + indexRequest.getStartIndex() && i < indexResultsById.size(); i++) {
+      indexResults.getIndexResults().add(orderedIndexResults.get(i));
     }
 
     return indexResults;

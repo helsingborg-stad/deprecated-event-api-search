@@ -8,7 +8,16 @@ public class IndexResult {
 
   private float score;
   private long eventId;
+  private String json;
 
+
+  public String getJson() {
+    return json;
+  }
+
+  public void setJson(String json) {
+    this.json = json;
+  }
 
   public float getScore() {
     return score;

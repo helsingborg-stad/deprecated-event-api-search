@@ -1,10 +1,12 @@
 package se.helsingborg.event.search.servlet;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.helsingborg.event.SystemErrorManager;
 import se.helsingborg.event.domin.Event;
 import se.helsingborg.event.PrimaryPersistence;
+import se.helsingborg.event.domin.EventJSONSerialization;
 import se.helsingborg.event.search.Service;
 
 import javax.servlet.ServletException;
@@ -34,17 +36,19 @@ public class EventModifiedServlet extends HttpServlet {
     }
     long eventId = Long.valueOf(matcher.group(1));
 
-    Event event;
+    JSONObject jsonEvent;
     PrimaryPersistence wordpress = new PrimaryPersistence();
     try {
       wordpress.connect();
       try {
-        event = wordpress.getEvent(eventId);
+        jsonEvent = wordpress.getEvent(eventId);
       } finally {
         wordpress.disconnect();
       }
 
-      Service.getInstance().getIndexManager().updateIndex(event);
+      EventJSONSerialization serialization = new EventJSONSerialization();
+      Event event = serialization.unmarshalEvent(jsonEvent);
+      Service.getInstance().getIndexManager().updateIndex(event, jsonEvent);
 
     } catch (Exception e) {
       log.error("Exception caught when WP repported updated Event.", e);

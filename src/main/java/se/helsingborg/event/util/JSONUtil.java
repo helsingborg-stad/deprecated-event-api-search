@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -22,6 +23,14 @@ public class JSONUtil {
   private static Pattern utcMinutes = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d");
   private static Pattern utcSeconds = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d:\\d?\\d");
   private static Pattern utcMilliseconds = Pattern.compile("\\d\\d\\d\\d-\\d?\\d-\\d+\\dT\\d+\\d:\\d?\\d:\\d?\\d");
+
+  public static String toUtcDateTime(long epochMilliseconds) {
+    return toUtcDateTime(new Date(epochMilliseconds));
+  }
+
+  public static String toUtcDateTime(Date date) {
+    return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(date);
+  }
 
   public static Long optDateTime(JSONObject json, String attribute) throws JSONException, ParseException {
 
