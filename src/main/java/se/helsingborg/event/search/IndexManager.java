@@ -14,7 +14,6 @@ import se.helsingborg.event.domin.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author kalle
@@ -230,16 +229,16 @@ public class IndexManager {
   }
 
 
-  public IndexResults search(final IndexRequest indexRequest) throws Exception {
+  public SearchResults search(final SearchRequest searchRequest) throws Exception {
 
     /** Multiple index points for the same event, i.e. shows on multiple dates. */
-    final Map<Long, IndexResult> indexResultsById = new HashMap<>();
+    final Map<Long, SearchResult> indexResultsById = new HashMap<>();
 
     IndexSearcher indexSearcher = searcherManager.acquire();
     try {
 
 
-      indexSearcher.search(indexRequest.getQuery(), new Collector() {
+      indexSearcher.search(searchRequest.getQuery(), new Collector() {
         @Override
         public LeafCollector getLeafCollector(final LeafReaderContext leafReaderContext) throws IOException {
           return new LeafCollector() {
@@ -259,19 +258,19 @@ public class IndexManager {
               }
 
               long eventId = identityValues.get(doc);
-              IndexResult searchResult = indexResultsById.get(eventId);
+              SearchResult searchResult = indexResultsById.get(eventId);
               if (searchResult == null) {
-                searchResult = new IndexResult();
+                searchResult = new SearchResult();
                 searchResult.setEventId(eventId);
                 indexResultsById.put(eventId, searchResult);
               }
-              if (indexRequest.isJsonOutput() && searchResult.getJson() == null) {
+              if (searchRequest.isEventJsonOutput() && searchResult.getJson() == null) {
                 if (jsonValues == null) {
                   jsonValues = leafReaderContext.reader().getBinaryDocValues(FIELD_EVENT_JSON_VALUE);
                 }
                 searchResult.setJson(jsonValues.get(doc).utf8ToString());
               }
-              if (indexRequest.isScoring()) {
+              if (searchRequest.isScoring()) {
                 float score = scorer.score();
                 if (searchResult.getScore() < score) {
                   searchResult.setScore(score);
@@ -294,23 +293,23 @@ public class IndexManager {
     }
 
 
-    List<IndexResult> orderedIndexResults = new ArrayList<>(indexResultsById.values());
+    List<SearchResult> orderedSearchResults = new ArrayList<>(indexResultsById.values());
     // todo sort order
-    Collections.sort(orderedIndexResults, new Comparator<IndexResult>() {
+    Collections.sort(orderedSearchResults, new Comparator<SearchResult>() {
       @Override
-      public int compare(IndexResult o1, IndexResult o2) {
+      public int compare(SearchResult o1, SearchResult o2) {
         return Float.compare(o1.getScore(), o2.getScore());
       }
     });
 
-    IndexResults indexResults = new IndexResults();
-    indexResults.setTotalNumberOfSearchResults(orderedIndexResults.size());
-    indexResults.setIndexResults(new ArrayList<IndexResult>(indexRequest.getLimit()));
-    for (int i = indexRequest.getStartIndex(); i < indexRequest.getLimit() + indexRequest.getStartIndex() && i < indexResultsById.size(); i++) {
-      indexResults.getIndexResults().add(orderedIndexResults.get(i));
+    SearchResults searchResults = new SearchResults();
+    searchResults.setTotalNumberOfSearchResults(orderedSearchResults.size());
+    searchResults.setSearchResults(new ArrayList<SearchResult>(searchRequest.getLimit()));
+    for (int i = searchRequest.getStartIndex(); i < searchRequest.getLimit() + searchRequest.getStartIndex() && i < indexResultsById.size(); i++) {
+      searchResults.getSearchResults().add(orderedSearchResults.get(i));
     }
 
-    return indexResults;
+    return searchResults;
 
   }
 

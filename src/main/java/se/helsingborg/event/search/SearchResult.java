@@ -4,7 +4,7 @@ package se.helsingborg.event.search;
  * @author kalle
  * @since 2015-10-25 13:33
  */
-public class IndexResult {
+public class SearchResult {
 
   private float score;
   private long eventId;

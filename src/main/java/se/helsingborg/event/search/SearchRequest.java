@@ -6,15 +6,25 @@ import org.apache.lucene.search.Query;
  * @author kalle
  * @since 2015-10-25 13:27
  */
-public class IndexRequest {
+public class SearchRequest {
 
   private boolean scoring;
-  private boolean jsonOutput;
+  private boolean identityOutput;
+  private boolean eventJsonOutput;
+
   private String reference;
   private int startIndex;
   private int limit;
 
   private Query query;
+
+  public boolean isIdentityOutput() {
+    return identityOutput;
+  }
+
+  public void setIdentityOutput(boolean identityOutput) {
+    this.identityOutput = identityOutput;
+  }
 
   public String getReference() {
     return reference;
@@ -48,12 +58,12 @@ public class IndexRequest {
     this.query = query;
   }
 
-  public boolean isJsonOutput() {
-    return jsonOutput;
+  public boolean isEventJsonOutput() {
+    return eventJsonOutput;
   }
 
-  public void setJsonOutput(boolean jsonOutput) {
-    this.jsonOutput = jsonOutput;
+  public void setEventJsonOutput(boolean eventJsonOutput) {
+    this.eventJsonOutput = eventJsonOutput;
   }
 
   public boolean isScoring() {

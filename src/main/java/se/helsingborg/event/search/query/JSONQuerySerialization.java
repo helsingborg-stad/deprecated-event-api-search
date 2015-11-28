@@ -13,6 +13,13 @@ import se.helsingborg.event.search.IndexManager;
  */
 public class JSONQuerySerialization {
 
+  private Query parseBoost(JSONObject jsonQuery, Query query) throws JSONException {
+    if (jsonQuery.has("boost")) {
+      double boost = jsonQuery.getDouble("boost");
+      query.setBoost((float) boost);
+    }
+    return query;
+  }
 
   public Query parse(JSONObject jsonQuery) throws Exception {
 
@@ -43,20 +50,20 @@ public class JSONQuerySerialization {
 
       }
 
-      return booleanQuery.build();
+      return parseBoost(jsonQuery, booleanQuery.build());
 
     } else if ("match all documents".equalsIgnoreCase(type)) {
 
-      return new MatchAllDocsQuery();
+      return parseBoost(jsonQuery, new MatchAllDocsQuery());
 
     } else if ("term".equalsIgnoreCase(type)) {
 
-      return new TermQuery(new Term(jsonQuery.getString("field"), jsonQuery.getString("value")));
+      return parseBoost(jsonQuery, new TermQuery(new Term(jsonQuery.getString("field"), jsonQuery.getString("value"))));
 
 
     } else if ("coordinate envelope".equalsIgnoreCase(type)) {
 
-      return new CoordinateEnvelopeQueryFactory()
+      return parseBoost(jsonQuery, new CoordinateEnvelopeQueryFactory()
           .setLatitudeField(jsonQuery.getString("latitudeField"))
           .setLongitudeField(jsonQuery.getString("longitudeField"))
 
@@ -64,19 +71,19 @@ public class JSONQuerySerialization {
           .setWest(jsonQuery.getDouble("westLongitude"))
           .setNorth(jsonQuery.getDouble("northLatitude"))
           .setEast(jsonQuery.getDouble("eastLongitude"))
-          .build();
+          .build());
 
     } else if ("coordinate circle envelope".equalsIgnoreCase(type)) {
 
 
-      return new CoordinateCircleEnvelopeQueryFactory()
+      return parseBoost(jsonQuery, new CoordinateCircleEnvelopeQueryFactory()
           .setLatitudeField(jsonQuery.getString("latitudeField"))
           .setLongitudeField(jsonQuery.getString("longitudeField"))
 
           .setCentroidLatitude(jsonQuery.getDouble("centroidLatitude"))
           .setCentroidLongitude(jsonQuery.getDouble("centroidLongitude"))
           .setRadiusKilometers(jsonQuery.getDouble("radiusKilometers"))
-          .build();
+          .build());
 
 
     } else if ("integer range".equalsIgnoreCase(type)) {
@@ -87,7 +94,7 @@ public class JSONQuerySerialization {
       int maximum = !jsonQuery.isNull("maximum") ? jsonQuery.getInt("maximum") : Integer.MAX_VALUE;
       boolean includeMaximum = !jsonQuery.has("includeMaximum") || jsonQuery.getBoolean("includeMaximum");
 
-      return NumericRangeQuery.newIntRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum);
+      return parseBoost(jsonQuery, NumericRangeQuery.newIntRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum));
 
     } else if ("long range".equalsIgnoreCase(type)) {
 
@@ -97,7 +104,7 @@ public class JSONQuerySerialization {
       long maximum = !jsonQuery.isNull("maximum") ? jsonQuery.getLong("maximum") : Long.MAX_VALUE;
       boolean includeMaximum = !jsonQuery.has("includeMaximum") || jsonQuery.getBoolean("includeMaximum");
 
-      return NumericRangeQuery.newLongRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum);
+      return parseBoost(jsonQuery, NumericRangeQuery.newLongRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum));
 
     } else if ("float range".equalsIgnoreCase(type)) {
 
@@ -107,7 +114,7 @@ public class JSONQuerySerialization {
       float maximum = !jsonQuery.isNull("maximum") ? (float) jsonQuery.getDouble("maximum") : Float.MAX_VALUE;
       boolean includeMaximum = !jsonQuery.has("includeMaximum") || jsonQuery.getBoolean("includeMaximum");
 
-      return NumericRangeQuery.newFloatRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum);
+      return parseBoost(jsonQuery, NumericRangeQuery.newFloatRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum));
 
     } else if ("double range".equalsIgnoreCase(type)) {
 
@@ -117,7 +124,7 @@ public class JSONQuerySerialization {
       double maximum = !jsonQuery.isNull("maximum") ? jsonQuery.getDouble("maximum") : Double.MAX_VALUE;
       boolean includeMaximum = !jsonQuery.has("includeMaximum") || jsonQuery.getBoolean("includeMaximum");
 
-      return NumericRangeQuery.newDoubleRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum);
+      return parseBoost(jsonQuery, NumericRangeQuery.newDoubleRange(jsonQuery.getString("field"), minimum, maximum, includeMinimum, includeMaximum));
 
 /*
  *  EVENT-API Specific queries
@@ -126,7 +133,7 @@ public class JSONQuerySerialization {
 
     } else if ("event text".equalsIgnoreCase(type)) {
 
-      return new EventTextQueryBuilder().setText(jsonQuery.getString("text")).build();
+      return parseBoost(jsonQuery, new EventTextQueryBuilder().setText(jsonQuery.getString("text")).build());
 
     } else if ("event tags".equalsIgnoreCase(type)) {
 
@@ -135,19 +142,19 @@ public class JSONQuerySerialization {
       for (int i = 0; i < values.length(); i++) {
         query.add(new BooleanClause(new TermQuery(new Term(IndexManager.FIELD_EVENT_TAG, values.getString(i).toUpperCase())), BooleanClause.Occur.MUST));
       }
-      return query.build();
+      return parseBoost(jsonQuery, query.build());
 
     } else if ("future events".equalsIgnoreCase(type)) {
 
-      return NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, System.currentTimeMillis(), Long.MAX_VALUE, false, true);
+      return parseBoost(jsonQuery, NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, System.currentTimeMillis(), Long.MAX_VALUE, false, true));
 
     } else if ("past events".equalsIgnoreCase(type)) {
 
-      return NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, Long.MIN_VALUE, System.currentTimeMillis(), true, false);
+      return parseBoost(jsonQuery, NumericRangeQuery.newLongRange(IndexManager.FIELD_EVENT_SHOW_START_DATE_TIME, Long.MIN_VALUE, System.currentTimeMillis(), true, false));
 
     } else if ("event location coordinate envelope".equalsIgnoreCase(type)) {
 
-      return new CoordinateEnvelopeQueryFactory()
+      return parseBoost(jsonQuery, new CoordinateEnvelopeQueryFactory()
           .setLatitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LATITUDE)
           .setLongitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LONGITUDE)
 
@@ -155,19 +162,18 @@ public class JSONQuerySerialization {
           .setWest(jsonQuery.getDouble("westLongitude"))
           .setNorth(jsonQuery.getDouble("northLatitude"))
           .setEast(jsonQuery.getDouble("eastLongitude"))
-          .build();
+          .build());
 
     } else if ("event location coordinate circle envelope".equalsIgnoreCase(type)) {
 
-
-      return new CoordinateCircleEnvelopeQueryFactory()
+      return parseBoost(jsonQuery, new CoordinateCircleEnvelopeQueryFactory()
           .setLatitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LATITUDE)
           .setLongitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LONGITUDE)
 
           .setCentroidLatitude(jsonQuery.getDouble("centroidLatitude"))
           .setCentroidLongitude(jsonQuery.getDouble("centroidLongitude"))
           .setRadiusKilometers(jsonQuery.getDouble("radiusKilometers"))
-          .build();
+          .build());
 
 
     } else {

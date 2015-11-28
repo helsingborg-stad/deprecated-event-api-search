@@ -2,13 +2,12 @@ package se.helsingborg.event;
 
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.json.JSONObject;
 import se.helsingborg.event.domin.Event;
 import se.helsingborg.event.domin.EventJSONSerialization;
-import se.helsingborg.event.search.IndexRequest;
-import se.helsingborg.event.search.IndexResults;
+import se.helsingborg.event.search.SearchRequest;
+import se.helsingborg.event.search.SearchResults;
 import se.helsingborg.event.search.Service;
 import se.helsingborg.event.sources.cbis.CBISExportReader;
 
@@ -43,14 +42,14 @@ public class TestService extends TestCase {
       }
       Service.getInstance().getIndexManager().commit();
 
-      IndexRequest indexRequest = new IndexRequest();
-      indexRequest.setQuery(new MatchAllDocsQuery());
-      indexRequest.setStartIndex(0);
-      indexRequest.setLimit(100);
-      indexRequest.setScoring(true);
-      indexRequest.setJsonOutput(true);
+      SearchRequest searchRequest = new SearchRequest();
+      searchRequest.setQuery(new MatchAllDocsQuery());
+      searchRequest.setStartIndex(0);
+      searchRequest.setLimit(100);
+      searchRequest.setScoring(true);
+      searchRequest.setEventJsonOutput(true);
 
-      IndexResults indexResults = Service.getInstance().getIndexManager().search(indexRequest);
+      SearchResults searchResults = Service.getInstance().getIndexManager().search(searchRequest);
 
       System.currentTimeMillis();
 

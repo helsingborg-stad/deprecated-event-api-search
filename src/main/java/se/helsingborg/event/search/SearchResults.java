@@ -6,11 +6,11 @@ import java.util.List;
  * @author kalle
  * @since 2015-10-25 13:27
  */
-public class IndexResults {
+public class SearchResults {
 
   private int totalNumberOfSearchResults;
   private int startIndex;
-  private List<IndexResult> indexResults;
+  private List<SearchResult> searchResults;
 
   public int getTotalNumberOfSearchResults() {
     return totalNumberOfSearchResults;
@@ -28,11 +28,11 @@ public class IndexResults {
     this.startIndex = startIndex;
   }
 
-  public List<IndexResult> getIndexResults() {
-    return indexResults;
+  public List<SearchResult> getSearchResults() {
+    return searchResults;
   }
 
-  public void setIndexResults(List<IndexResult> indexResults) {
-    this.indexResults = indexResults;
+  public void setSearchResults(List<SearchResult> searchResults) {
+    this.searchResults = searchResults;
   }
 }

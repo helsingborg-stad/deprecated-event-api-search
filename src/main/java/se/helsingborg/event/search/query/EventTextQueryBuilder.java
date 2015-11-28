@@ -94,6 +94,8 @@ public class EventTextQueryBuilder {
 
   private void textPhraseQueryFactory(String field, float boost, int slop, boolean ordered) throws IOException {
 
+    int tokensCount = 0;
+
     SpanNearQuery.Builder phraseQuery = new SpanNearQuery.Builder(field, ordered);
     phraseQuery.setSlop(slop);
 
@@ -106,9 +108,14 @@ public class EventTextQueryBuilder {
         String token = charTermAttribute.toString();
         SpanTermQuery termQuery = new SpanTermQuery(new Term(field, token));
         phraseQuery.addClause(termQuery);
+        tokensCount++;
       }
     } finally {
       ts.close();
+    }
+
+    if (tokensCount < 2) {
+      return;
     }
 
     Query query = phraseQuery.build();

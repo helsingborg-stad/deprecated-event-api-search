@@ -25,6 +25,18 @@
       width: 100%;
     }
 
+    #query {
+      color: #000000;
+      padding: 0.25em 0.25em 0.25em 0.25em;
+      border: solid 2px #FFFFFF;
+      background-color: #ffffff;
+      z-index: 2000;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+
+    }
+
 
   </style>
 
@@ -32,6 +44,11 @@
 <body>
 
 <div id="map"></div>
+
+<div id="query">
+  <input id="query[text]"/>
+</div>
+
 
 <script>
 
@@ -109,24 +126,45 @@
   }
 
 
-
-
   function searchRequestFactory() {
 
     var searchRequest = {
-      reference : createRandomUUID(),
-      jsonOutput : true,
+      reference: createRandomUUID(),
+      identityOutput: false,
+      eventJsonOutput: true,
       scoring: false,
-      limit : 100000,
-      startIndex : 0,
-      query : {
-        type : "event location coordinate envelope",
+      limit: 10000000,
+      startIndex: 0,
+      query: {
+        type: "boolean query",
+        clauses: []
+      }
+    };
+
+    searchRequest.query.clauses.push({
+      occur: "must",
+      query: {
+        type: "event location coordinate envelope",
         southLatitude: map.getBounds().getSouth(),
         westLongitude: map.getBounds().getWest(),
         northLatitude: map.getBounds().getNorth(),
         eastLongitude: map.getBounds().getEast()
       }
-    };
+    });
+
+    var text = document.getElementById("query[text]").value;
+    if (text) {
+      text = text.trim();
+      if (text != "") {
+        searchRequest.query.clauses.push({
+          occur: "must",
+          query: {
+            type: "event text",
+            text: text
+          }
+        });
+      }
+    }
 
     return searchRequest;
   }
@@ -165,7 +203,7 @@
 
   function processSearchResults(searchRequest, searchResults) {
     markersLayer.clearLayers();
-    for (var i=0; i<searchResults.searchResults.length; i++) {
+    for (var i = 0; i < searchResults.searchResults.length; i++) {
       var searchResult = searchResults.searchResults[i];
       processSearchResult(searchRequest, searchResults, searchResult);
     }
@@ -175,8 +213,8 @@
 
     // todo server side coordinate collision handling,
     // todo i.e. move small distance so no two markers are at the exact same place
-    L.marker([searchResult.location.geo.latitude, searchResult.location.geo.longitude])
-        .bindPopup(searchResult.name)
+    L.marker([searchResult.event.location.geo.latitude, searchResult.event.location.geo.longitude])
+        .bindPopup(searchResult.event.name)
         .addTo(markersLayer);
   }
 
