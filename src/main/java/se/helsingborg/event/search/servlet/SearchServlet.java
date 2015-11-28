@@ -47,9 +47,12 @@ public class SearchServlet extends JSONPostServlet {
       out.append("\"reference\": ").append(JSONObject.quote(searchRequest.getReference())).append(",\n");
     }
     out.append("\"totalNumberOfSearchResults\": ").append(String.valueOf(searchResults.getTotalNumberOfSearchResults())).append(",\n");
-    out.append("\"startIndex\": ").append(String.valueOf(searchRequest.getStartIndex())).append(",\n");
+    out.append("\"startIndex\": ").append(String.valueOf(searchRequest.getStartIndex()));
 
-    if (searchResults.getSearchResults() != null && !searchResults.getSearchResults().isEmpty()) {
+    if (searchResults.getSearchResults() == null || searchResults.getSearchResults().isEmpty()) {
+      out.append("\n");
+    } else {
+      out.append(",\n");
       out.write("\"searchResults\": [\n");
       for (Iterator<SearchResult> iterator = searchResults.getSearchResults().iterator(); iterator.hasNext(); ) {
         SearchResult searchResult = iterator.next();
