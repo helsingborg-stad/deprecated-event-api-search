@@ -49,6 +49,7 @@ public class EventModifiedServlet extends HttpServlet {
       EventJSONSerialization serialization = new EventJSONSerialization();
       Event event = serialization.unmarshalEvent(jsonEvent);
       Service.getInstance().getIndexManager().updateIndex(event, jsonEvent);
+      Service.getInstance().getIndexManager().commit();
 
     } catch (Exception e) {
       log.error("Exception caught when WP repported updated Event.", e);

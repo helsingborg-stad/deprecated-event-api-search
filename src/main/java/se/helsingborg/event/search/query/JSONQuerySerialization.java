@@ -149,7 +149,7 @@ public class JSONQuerySerialization {
 
       return new CoordinateEnvelopeQueryFactory()
           .setLatitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LATITUDE)
-          .setLongitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LATITUDE)
+          .setLongitudeField(IndexManager.FIELD_EVENT_LOCATION_GEO_LONGITUDE)
 
           .setSouth(jsonQuery.getDouble("southLatitude"))
           .setWest(jsonQuery.getDouble("westLongitude"))

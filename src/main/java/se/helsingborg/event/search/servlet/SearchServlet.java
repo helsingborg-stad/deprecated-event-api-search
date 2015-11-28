@@ -2,6 +2,7 @@ package se.helsingborg.event.search.servlet;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import se.helsingborg.event.search.IndexRequest;
 import se.helsingborg.event.search.IndexResult;
 import se.helsingborg.event.search.IndexResults;
@@ -24,6 +25,8 @@ public class SearchServlet extends JSONPostServlet {
   protected void doProcess(JSONObject json, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
     IndexRequest indexRequest = new IndexRequest();
+    indexRequest.setJsonOutput(JSONUtil.optBoolean(json, "jsonOutput", false));
+    indexRequest.setScoring(JSONUtil.optBoolean(json, "scoring", true));
     indexRequest.setReference(JSONUtil.optString(json, "reference"));
     indexRequest.setStartIndex(JSONUtil.optInteger(json, "startIndex", 0));
     indexRequest.setLimit(JSONUtil.optInteger(json, "limit", 100));
@@ -38,7 +41,11 @@ public class SearchServlet extends JSONPostServlet {
     if (indexResults.getIndexResults() != null && !indexResults.getIndexResults().isEmpty()) {
       JSONArray jsonSearchResults = new JSONArray(new ArrayList(indexResults.getIndexResults().size()));
       for (IndexResult indexResult : indexResults.getIndexResults()) {
-        jsonSearchResults.put(indexResult.getEventId());
+        if (indexRequest.isJsonOutput()) {
+          jsonSearchResults.put(new JSONObject(new JSONTokener(indexResult.getJson())));
+        } else {
+          jsonSearchResults.put(indexResult.getEventId());
+        }
       }
       jsonResults.put("searchResults", jsonSearchResults);
     }
