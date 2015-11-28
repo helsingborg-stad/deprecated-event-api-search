@@ -64,14 +64,14 @@ public class SearchServlet extends JSONPostServlet {
         }
         if (searchRequest.isIdentityOutput()) {
           if (needsComma) {
-            out.append(",");
+            out.append(", ");
           }
           out.append("\"eventId\": ").append(String.valueOf(searchResult.getEventId()));
           needsComma = true;
         }
         if (searchRequest.isEventJsonOutput()) {
           if (needsComma) {
-            out.append(",");
+            out.append(", ");
           }
           out.append("\"event\": ").append(searchResult.getJson());
           needsComma = true;

@@ -3,6 +3,7 @@ package se.helsingborg.event.search.query;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.ngram.NGramTokenFilter;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -30,6 +31,7 @@ public class EventTextQueryBuilder {
   private float nameBoost = 3f;
   private float descriptionBoost = 1f;
   private float tagBoost = 2f;
+  private float combinedTextNgramBoost = 0.1f;
 
 
   private String text;
@@ -48,6 +50,8 @@ public class EventTextQueryBuilder {
     tagQueryFactory();
     nameQueryFactory();
     descriptionQueryFactory();
+
+    combinedTextNgramQueryFactory();
 
     // todo location text
     // todo offer text
@@ -187,6 +191,24 @@ public class EventTextQueryBuilder {
     lowerCaseFilter.close();
   }
 
+  private void combinedTextNgramQueryFactory() throws IOException {
+    TokenStream ts = new StandardAnalyzer().tokenStream(IndexManager.FIELD_EVENT_COMBINED_TEXT_NGRAMS, text);
+    LowerCaseFilter lowerCaseFilter = new LowerCaseFilter(ts);
+    NGramTokenFilter nGramTokenFilter = new NGramTokenFilter(lowerCaseFilter, 3, 5);
+    nGramTokenFilter.reset();
+
+    CharTermAttribute charTermAttribute = nGramTokenFilter.addAttribute(CharTermAttribute.class);
+
+    while (nGramTokenFilter.incrementToken()) {
+      TermQuery termQuery = new TermQuery(new Term(IndexManager.FIELD_EVENT_COMBINED_TEXT_NGRAMS, charTermAttribute.toString()));
+      termQuery.setBoost(combinedTextNgramBoost);
+      disjunctionMaxQuery.add(termQuery);
+    }
+
+    nGramTokenFilter.close();
+
+  }
+
 
   public String getText() {
     return text;
@@ -205,6 +227,8 @@ public class EventTextQueryBuilder {
     this.tieBreakerMultiplier = tieBreakerMultiplier;
     return this;
   }
+
+
 
 
 }

@@ -42,6 +42,8 @@ public class IndexManager {
   public static final String FIELD_EVENT_LOCATION_GEO_LONGITUDE = "Event.location.geo#longitude";
 
 
+  public static final String FIELD_EVENT_COMBINED_TEXT_NGRAMS = "Event#combined text ngrams";
+
   public static final String FIELD_EVENT_TAG = "Event#tag";
   public static final String FIELD_EVENT_NAME = "Event#name";
   public static final String FIELD_EVENT_DESCRIPTION = "Event#description";
@@ -206,6 +208,20 @@ public class IndexManager {
     }
 
 
+    // combined text ngrams
+    if (event.getName() != null) {
+      document.add(new TextField(FIELD_EVENT_COMBINED_TEXT_NGRAMS, event.getName(), Field.Store.NO));
+    }
+    if (event.getDescription() != null) {
+      document.add(new TextField(FIELD_EVENT_COMBINED_TEXT_NGRAMS, event.getDescription(), Field.Store.NO));
+    }
+    if (event.getTags() != null) {
+      for (String tag : event.getTags()) {
+        document.add(new TextField(FIELD_EVENT_COMBINED_TEXT_NGRAMS, tag, Field.Store.NO));
+      }
+    }
+
+
     return document;
 
   }
@@ -298,7 +314,7 @@ public class IndexManager {
     Collections.sort(orderedSearchResults, new Comparator<SearchResult>() {
       @Override
       public int compare(SearchResult o1, SearchResult o2) {
-        return Float.compare(o1.getScore(), o2.getScore());
+        return Float.compare(o2.getScore(), o1.getScore());
       }
     });
 
